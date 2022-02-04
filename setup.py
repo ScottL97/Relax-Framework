@@ -6,7 +6,7 @@ setup(
     name="relax",
     version="0.1.0",
     description="relax framework",
-    license="MIT Licence",
+    license="LGPL-2.1 License",
 
     url="https://github.com/ScottL97/Relax-Framework",
     author="Scott Liu",
