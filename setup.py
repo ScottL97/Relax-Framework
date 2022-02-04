@@ -8,7 +8,7 @@ setup(
     description="relax framework",
     license="MIT Licence",
 
-    url="http://test.com",
+    url="https://github.com/ScottL97/Relax-Framework",
     author="Scott Liu",
     author_email="2687538884@qq.com",
     packages=find_packages(),
