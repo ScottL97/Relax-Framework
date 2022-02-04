@@ -1,0 +1,6 @@
+__pycache__
+.idea
+dist
+relax.egg-info
+*.pyc
+*.log

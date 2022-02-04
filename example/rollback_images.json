@@ -1,0 +1,25 @@
+{
+  "flow_name": "回退镜像",
+  "phases": {
+    "获取镜像包": {
+      "handler": "get_images.ImagesAcquirer",
+      "progress": 30
+    },
+    "上传镜像包": {
+      "handler": "upload_images.ImagesUploader",
+      "progress": 50
+    },
+    "导出配置": {
+      "handler": "export_config.ConfigExporter",
+      "progress": 60
+    },
+    "替换镜像": {
+      "handler": "update_images.ImagesUpdater",
+      "progress": 75
+    },
+    "恢复配置": {
+      "handler": "recover_config.ConfigRecovery",
+      "progress": 100
+    }
+  }
+}
