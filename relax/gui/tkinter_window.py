@@ -81,11 +81,9 @@ class TkinterWindow(Window):
     # 在GUI上添加flow按钮
     def _setup_flow(self, flow_mgr):
         self._destroy_flow_buttons()
-        for flow_name, flow in flow_mgr.flows.items():
+        for flow_name in flow_mgr.flow_builders:
             self.flow_buttons[flow_name] = FlowButton(flow_name, self.top_frame, flow_mgr.start_flow)
             self.flow_buttons[flow_name].show()
-            # TODO: 有多个flow时，阶段会重复添加，怎么处理
-            # self._setup_phases(flow.phases)
 
     # 设置GUI上显示的阶段
     def setup_phases(self, phases):

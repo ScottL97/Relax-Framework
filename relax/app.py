@@ -16,7 +16,7 @@ from relax.flow.mgr import FlowMgr
 local_version = '0.1.0'
 
 
-# 检查工具是否有新版本
+# TODO: 检查工具是否有新版本
 # def check_if_expired():
 #     global local_version
 #     software_name = 'docker_auto_tool'
@@ -62,12 +62,11 @@ def upgrade_tool():
 class Relax:
     def __init__(self, root_path):
         self.window = TkinterWindow()
-        # TODO: 日志要用绝对路径，默认用当前执行路径拼接
         self.log = Log(os.path.join(root_path, 'relax.log'), self.window)
-        # TODO: 自动读取多个配置文件，创建多个flow_mgr
         self.flow_mgr = FlowMgr(root_path, self.log, self.window)
 
     def init(self):
+        # 初始化日志
         if self.log.init() != 0:
             return 1
         # 自动更新工具版本
@@ -80,7 +79,7 @@ class Relax:
             print('更新中，完成后自动启动')
             sys.exit(0)
 
-        # 设置flow
-        self.flow_mgr.build_flows()
+        # 创建flow builder对象字典
+        self.flow_mgr.init_flow_builders()
         # 启动GUI
         self.window.run()

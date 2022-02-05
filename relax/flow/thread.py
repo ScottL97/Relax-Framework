@@ -4,7 +4,7 @@
 @File  : thread.py
 @Author: Scott
 @Date  : 2022/2/4 19:26
-@Desc  : 
+@Desc  : 自动化流程（flow）线程以及自动化流程监控线程
 """
 import threading
 
