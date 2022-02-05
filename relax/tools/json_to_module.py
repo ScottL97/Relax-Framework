@@ -81,17 +81,17 @@ def create_class(handlers):
     for file_name, class_name in handlers:
         file_path = os.path.join(root_path, file_name)
         if not os.path.isfile(file_path):
-            with open(file_path, 'w') as f:
+            with open(file_path, 'w', encoding='utf-8') as f:
                 f.write(MODULE_FILE_HEAD)
                 f.write(PHASE_CLASS % class_name)
             continue
 
         # 如果已存在python文件，查询是否已定义该类，如果未定义该类，创建该类
-        with open(file_path, 'r') as f:
+        with open(file_path, 'r', encoding='utf-8') as f:
             if f.read().find("class %s(" % class_name) != -1:
                 continue
 
-        with open(file_path, 'a') as f:
+        with open(file_path, 'a', encoding='utf-8') as f:
             f.write(PHASE_CLASS % class_name)
 
 
@@ -100,7 +100,7 @@ def generate_main_py():
     if os.path.isfile(main_file_path):
         return
 
-    with open(main_file_path, 'w') as f:
+    with open(main_file_path, 'w', encoding='utf-8') as f:
         f.write(MAIN_PY)
 
 
