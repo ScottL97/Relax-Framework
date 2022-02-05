@@ -95,14 +95,13 @@ class TkinterWindow(Window):
     def run(self):
         self.window.mainloop()
 
-    def setup_result(self, result):
+    def setup_result(self, result, flow_name):
         if result == 0:
-            self.set_result('运行结果：成功')
+            self.set_result('运行结果：[%s] 成功' % flow_name)
         elif result is None:
-            self.set_result('运行结果：代码异常')
+            self.set_result('运行结果：[%s] 代码异常' % flow_name)
         else:
-            # TODO: 显示失败的阶段
-            self.set_result('运行结果：失败')
+            self.set_result('运行结果：[%s] 失败' % flow_name)
         self.enable_flow_buttons()
 
     def enable_flow_buttons(self):

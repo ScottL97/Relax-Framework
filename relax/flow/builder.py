@@ -54,10 +54,11 @@ class FlowBuilder(Builder):
 
     def build(self, flow_json):
         self.name = flow_json["flow_name"]
-        for phase_name in flow_json["phases"]:
+        for phase in flow_json["phases"]:
             # 需要保存状态，所以不能是子进程的形式，只能由用户自己编写类后，这里动态加载类来执行
-            handler_object = self._get_handler_object(flow_json["phases"][phase_name])
-            # TODO: 字典不能保证顺序，要用ordered_dict
+            handler_object = self._get_handler_object(phase)
+            phase_name = phase["phase_name"]
+            # TODO: python3.6版本之前字典不能保证顺序，要用ordered_dict
             self.constructed_object[phase_name] = handler_object
 
         return 0

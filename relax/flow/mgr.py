@@ -19,6 +19,13 @@ class FlowMgr:
         self.log = log
         self.window = window
 
+    def _construct_flow_builder(self, flow_json_path):
+        flow_builder = FlowBuilder(self.log)
+        self.flow_director.set_builder(flow_builder)
+        if self.flow_director.construct(flow_json_path) != 0:
+            return
+        self.flow_builders[flow_builder.name] = flow_builder
+
     def init_flow_builders(self):
         """
         创建flow builder对象字典，字典的键为flow JSON文件中的flow_name，值为flow JSON文件中的phases解析后的结果
@@ -26,13 +33,9 @@ class FlowMgr:
         """
         self.flow_builders = {}
         for root, dirs, files in os.walk(self.root_path):
-            for file in files:
-                if file.endswith('.json'):
-                    flow_builder = FlowBuilder(self.log)
-                    self.flow_director.set_builder(flow_builder)
-                    if self.flow_director.construct(os.path.join(root, file)) != 0:
-                        continue
-                    self.flow_builders[flow_builder.name] = flow_builder
+            json_files = [file for file in files if file.endswith(".json")]
+            for json_file in json_files:
+                self._construct_flow_builder(os.path.join(root, json_file))
         self.window.init(self)
 
     def start_flow(self, flow_name):
@@ -40,4 +43,4 @@ class FlowMgr:
         self.window.disable_flow_buttons()
         self.flow_director.set_builder(self.flow_builders[flow_name])
         self.window.setup_phases(self.flow_director.get_constructed_object())
-        self.flow_director.start()
+        self.flow_director.start(flow_name)

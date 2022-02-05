@@ -10,9 +10,10 @@ import threading
 
 
 class FlowThread(threading.Thread):
-    def __init__(self, func):
+    def __init__(self, func, flow_name):
         threading.Thread.__init__(self)
         self.func = func
+        self.flow_name = flow_name
         self._result = None
 
     def run(self):
@@ -23,9 +24,10 @@ class FlowThread(threading.Thread):
 
 
 class FlowWatcherThread(threading.Thread):
-    def __init__(self, func):
+    def __init__(self, func, flow_name):
         threading.Thread.__init__(self)
         self.func = func
+        self.flow_name = flow_name
 
     def run(self):
-        self.func()
+        self.func(self.flow_name)

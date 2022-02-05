@@ -80,6 +80,7 @@ class Relax:
             sys.exit(0)
 
         # 创建flow builder对象字典
+        # TODO: 如果要实现动态加载JSON流程文件，这个方法需要每次点击按钮时调用，或者增加按钮调用该方法
         self.flow_mgr.init_flow_builders()
         # 启动GUI
         self.window.run()

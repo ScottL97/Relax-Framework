@@ -9,6 +9,7 @@
 import json
 from abc import ABCMeta, abstractmethod
 from relax.flow.thread import FlowThread, FlowWatcherThread
+from relax.tools.profiling import profiling
 
 
 class Director(metaclass=ABCMeta):
@@ -53,19 +54,19 @@ class FlowDirector(Director):
         return self._builder.name
 
     # 启动自动化线程，并启动一个线程等待替换线程结束后更新结果
-    def start(self):
-        self._flow_thread = FlowThread(self.run)
-        self._flow_watcher_thread = FlowWatcherThread(self.watch_flow)
+    def start(self, flow_name):
+        self._flow_thread = FlowThread(self.run, flow_name)
+        self._flow_watcher_thread = FlowWatcherThread(self.watch_flow, flow_name)
         self._flow_thread.start()
         self._flow_watcher_thread.start()
 
     # 等待自动化线程返回结果
-    def watch_flow(self):
-        self.window.set_result('运行结果：运行中')
+    def watch_flow(self, flow_name):
+        self.window.set_result('运行结果：[%s] 运行中' % flow_name)
         self._flow_thread.join()
-        self.window.setup_result(self._flow_thread.get_result())
+        self.window.setup_result(self._flow_thread.get_result(), flow_name)
 
-    # TODO: 计算时间的装饰器
+    @profiling
     def run(self):
         ret = 0
         flow_name = self.get_flow_name()

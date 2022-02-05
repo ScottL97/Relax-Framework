@@ -67,7 +67,7 @@ class Window(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def setup_result(self, result):
+    def setup_result(self, result, flow_name):
         """
         显示自动化流程（flow）运行结果
         """
