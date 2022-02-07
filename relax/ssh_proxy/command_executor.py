@@ -10,7 +10,7 @@ import os
 import shutil
 import tempfile
 from relax.file_transfer.scp_proxy import SCPProxy
-from relax.ssh_helper.client_proxy import SSHClientProxy
+from relax.ssh_proxy.client_proxy import SSHClientProxy
 
 # TODO: 如果用户不属于sudoers、root用户禁止SSH登录、也没有expect，怎么办
 # 用户不属于sudoers时也无法正常执行root权限命令，所以生成脚本，scp拷贝到远程，通过expect脚本升root权限执行
@@ -82,6 +82,7 @@ class SSHCommandExecutor:
 
     # 返回值：stdout字符串，stderr字符串，结果（0为成功，非0为失败）
     def exec_cmd(self, remote_host, cmd, use_root=False):
+        # TODO: 每次执行命令都要连接一次，效率较低
         if self.ssh_client.set_remote_host(remote_host) != 0:
             self.log.error('user %s connect to remote host %s:%s failed' % (remote_host.username, remote_host.ip_addr,
                                                                             remote_host.port))

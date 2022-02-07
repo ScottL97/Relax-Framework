@@ -4,7 +4,7 @@
 @File  : json_to_module.py
 @Author: Scott
 @Date  : 2022/2/4 12:42
-@Desc  : 
+@Desc  : 根据JSON流程文件生成python模块和类
 """
 import json
 import sys
@@ -37,6 +37,9 @@ from relax.flow.phase import Phase
 
 PHASE_CLASS = '''
 class %s(Phase):
+    def __init__(self, log, progress):
+        super().__init__(log, progress)
+
     def run(self):
         return 0
 

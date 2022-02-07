@@ -7,7 +7,7 @@
 @Desc  : 通过SCP上传/下载文件
 """
 from scp import SCPClient
-from relax.ssh_helper.client_proxy import SSHClientProxy
+from relax.ssh_proxy.client_proxy import SSHClientProxy
 
 
 class SCPProxy:
