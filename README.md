@@ -6,6 +6,10 @@
 
 ### 安装relax框架
 
+```powershell
+> pip install relax-x.x.x.tar.gz
+```
+
 ### JSON流程文件编写
 
 * 创建自动化流程JSON文件，可以是多个，放在同一目录下，自动化流程JSON文件中的`flow_name`和其他JSON文件不能重复。
@@ -103,3 +107,14 @@ if __name__ == '__main__':
 
 ## 打包方法
 
+* 执行以下命令在dist目录下生成relax-x.x.x.tar.gz，x.x.x为setup.py中写的version：
+
+```powershell
+> python setup.py sdist
+```
+
+* 生成的压缩包可以通过以下命令安装：
+
+```powershell
+> pip install relax-x.x.x.tar.gz
+```
