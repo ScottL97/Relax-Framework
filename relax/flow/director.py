@@ -6,7 +6,9 @@
 @Date  : 2022/2/5 15:13
 @Desc  : 自动化流程（flow）的director，负责组装和切换builder，以及运行和监控自动化流程
 """
+import gc
 import json
+import time
 from abc import ABCMeta, abstractmethod
 from relax.flow.thread import FlowThread, FlowWatcherThread
 from relax.tools.profiling import profiling
@@ -58,7 +60,7 @@ class FlowDirector(Director):
         self._flow_thread.start()
         self._flow_watcher_thread.start()
 
-    # 等待自动化线程返回结果
+    # 等待自动化线程返回结果，自动化线程返回值是None时表示自动化代码异常
     def watch_flow(self, flow_name):
         self.window.set_result('运行结果：[%s] 运行中' % flow_name)
         self._flow_thread.join()
@@ -73,7 +75,7 @@ class FlowDirector(Director):
         self.log.phase("START FLOW %s" % flow_name)
         for phase_name in phases:
             self.log.phase("START PHASE %s" % phase_name)
-            phase = phases[phase_name]
+            phase = phases[phase_name][0](self.log, phases[phase_name][1])
             ret = phase.run()
             # 成功刷新进度条继续，失败返回非0值结束自动化流程
             if ret == 0:
@@ -83,6 +85,6 @@ class FlowDirector(Director):
             else:
                 self.log.phase("%s FAIL" % phase_name)
                 break
-        self._builder.clean_construct_object()
+        gc.collect()
         self.log.phase("END FLOW %s" % flow_name)
         return ret

@@ -14,6 +14,7 @@ from relax.gui.frame_progress_bar import FrameProgress
 from relax.gui.widget import FlowButton, PhaseCheckButton
 
 LOG_COLOR_DICT = {'ERROR': 'red',
+                  'WARN': 'orange',
                   'INFO': 'green',
                   'DEBUG': 'blue',
                   'PHASE': 'purple'}

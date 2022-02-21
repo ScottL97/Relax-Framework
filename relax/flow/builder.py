@@ -38,9 +38,9 @@ class FlowBuilder(Builder):
         self.constructed_object = {}
         self.name = ""
 
-    def _get_handler_object(self, phase):
+    def _get_handler_class(self, phase):
         """
-        动态创建JSON流程文件中写的每个阶段处理的对象
+        动态获取JSON流程文件中写的每个阶段处理的类
         :param phase:
         :return:
         """
@@ -50,14 +50,8 @@ class FlowBuilder(Builder):
         module_name = handler[0]
         class_name = handler[1]
         handler_class = class_for_name(module_name, class_name)
-        handler_object = handler_class(self.log, phase["progress"])
 
-        return handler_object
-
-    def clean_construct_object(self):
-        for k in list(self.constructed_object.keys()):
-            del self.constructed_object[k]
-        self.constructed_object = {}
+        return handler_class
 
     def build(self):
         with open(self.flow_json_path, 'r', encoding='utf-8') as f:
@@ -65,9 +59,9 @@ class FlowBuilder(Builder):
         self.name = flow_json["flow_name"]
         for phase in flow_json["phases"]:
             # 需要保存状态，所以不能是子进程的形式，只能由用户自己编写类后，这里动态加载类来执行
-            handler_object = self._get_handler_object(phase)
+            handler_class = self._get_handler_class(phase)
             phase_name = phase["phase_name"]
             # TODO: python3.6版本之前字典不能保证顺序，要用ordered_dict
-            self.constructed_object[phase_name] = handler_object
+            self.constructed_object[phase_name] = (handler_class, phase["progress"])
 
         return 0

@@ -19,10 +19,16 @@ class FlowMgr:
         self.log = log
         self.window = window
 
-    def _construct_flow_builder(self, flow_json_path):
-        flow_builder = FlowBuilder(self.log, flow_json_path)
+    def _construct_flow_builder(self, flow_builder):
         self.flow_director.set_builder(flow_builder)
         if self.flow_director.construct() != 0:
+            self.log.error("construct %s failed" % flow_builder.flow_json_path)
+            return 1
+        return 0
+
+    def _add_flow_builder_to_builders(self, flow_json_path):
+        flow_builder = FlowBuilder(self.log, flow_json_path)
+        if self._construct_flow_builder(flow_builder) != 0:
             return
         self.flow_builders[flow_builder.name] = flow_builder
 
@@ -35,14 +41,13 @@ class FlowMgr:
         for root, dirs, files in os.walk(self.root_path):
             json_files = [file for file in files if file.endswith(".json")]
             for json_file in json_files:
-                self._construct_flow_builder(os.path.join(root, json_file))
+                self._add_flow_builder_to_builders(os.path.join(root, json_file))
         self.window.init(self)
 
     def start_flow(self, flow_name):
-        self.window.init(self)
-        self.window.disable_flow_buttons()
-        self.flow_director.set_builder(self.flow_builders[flow_name])
-        if self.flow_director.construct() != 0:
+        self.window.set_progress(0)
+        if self._construct_flow_builder(self.flow_builders[flow_name]) != 0:
             return
+        self.window.disable_flow_buttons()
         self.window.setup_phases(self.flow_director.get_constructed_object())
         self.flow_director.start(flow_name)
