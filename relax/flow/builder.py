@@ -7,6 +7,7 @@
 @Desc  : 自动化流程（flow）建造者
 """
 import importlib
+import json
 from abc import ABCMeta, abstractmethod
 
 
@@ -26,13 +27,14 @@ def class_for_name(module_name, class_name):
 
 class Builder(metaclass=ABCMeta):
     @abstractmethod
-    def build(self, flow_json_path):
+    def build(self):
         pass
 
 
 class FlowBuilder(Builder):
-    def __init__(self, log):
+    def __init__(self, log, flow_json_path):
         self.log = log
+        self.flow_json_path = flow_json_path
         self.constructed_object = {}
         self.name = ""
 
@@ -52,7 +54,14 @@ class FlowBuilder(Builder):
 
         return handler_object
 
-    def build(self, flow_json):
+    def clean_construct_object(self):
+        for k in list(self.constructed_object.keys()):
+            del self.constructed_object[k]
+        self.constructed_object = {}
+
+    def build(self):
+        with open(self.flow_json_path, 'r', encoding='utf-8') as f:
+            flow_json = json.load(f)
         self.name = flow_json["flow_name"]
         for phase in flow_json["phases"]:
             # 需要保存状态，所以不能是子进程的形式，只能由用户自己编写类后，这里动态加载类来执行

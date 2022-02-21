@@ -22,7 +22,7 @@ class SSHClientProxy:
         self.ssh_client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
     # TODO: 哪些是用户调用的API，要通过某种方式告诉用户
-    def set_remote_host(self, remote_host):
+    def connect_remote_host(self, remote_host):
         self.remote_host = remote_host
         self.is_connected = False
         return self._connect_server()
@@ -37,6 +37,9 @@ class SSHClientProxy:
         return self.ssh_client.exec_command(cmd, timeout=timeout, get_pty=get_pty)
 
     def close(self):
+        # TODO: _connect_server调用失败的时候用不用释放资源
+        if not self.is_connected:
+            return
         self.ssh_client.close()
 
     def _connect_server(self):

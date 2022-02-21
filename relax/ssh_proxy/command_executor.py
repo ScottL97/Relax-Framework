@@ -41,6 +41,9 @@ class SSHCommandExecutor:
         self.ssh_client = SSHClientProxy(log)
         self.tmp_dir = tempfile.TemporaryDirectory(dir='.').name
 
+    def __del__(self):
+        self._close()
+
     def _upload_script(self, remote_host, script_string, script_name):
         source_filename = os.path.join(self.tmp_dir, script_name)
         target_filename = "%s/%s" % (os.path.basename(self.tmp_dir), script_name)
@@ -56,7 +59,7 @@ class SSHCommandExecutor:
         err = stderr.read().decode('utf8').strip()
         if len(err) != 0:
             self.log.error('change mod of %s failed: %s' % (target_filename, err))
-        self.ssh_client.exec_command("dos2unix " + target_filename)
+        self.ssh_client.exec_command("sed -i -e 's/\r//' " + target_filename)
 
     def _upload_login_root_script(self, remote_host):
         utils_script = UTILS_SCRIPT % self.ssh_client.get_root_password()
@@ -82,8 +85,9 @@ class SSHCommandExecutor:
 
     # 返回值：stdout字符串，stderr字符串，结果（0为成功，非0为失败）
     def exec_cmd(self, remote_host, cmd, use_root=False):
-        # TODO: 每次执行命令都要连接一次，效率较低
-        if self.ssh_client.set_remote_host(remote_host) != 0:
+        # TODO: 同一host，每次执行命令都要连接一次，效率较低
+        # TODO: 当连接了一台新的host时，旧的host的信息就丢失了，也就不会释放旧的host上的临时目录
+        if self.ssh_client.connect_remote_host(remote_host) != 0:
             self.log.error('user %s connect to remote host %s:%s failed' % (remote_host.username, remote_host.ip_addr,
                                                                             remote_host.port))
             return 1
@@ -101,12 +105,12 @@ class SSHCommandExecutor:
 
         return out, err, 0
 
-    def close(self):
-        if not self.ssh_client.is_connected:
-            return
+    def _close(self):
+        # TODO: 关闭窗口的时候，无法打印日志，会出异常
         stdin, stdout, stderr = self.ssh_client.exec_command("rm -rf %s" % os.path.basename(self.tmp_dir))
         err = stderr.read().decode('utf8')
         if len(err) != 0:
             self.log.error('rm -rf %s tmp dir on SSH server failed: %s' % (self.tmp_dir, err))
-        shutil.rmtree(self.tmp_dir)
+        if os.path.isdir(self.tmp_dir):
+            shutil.rmtree(self.tmp_dir)
         self.ssh_client.close()

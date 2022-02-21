@@ -23,7 +23,7 @@ class SCPProxy:
         :param target_file_path: 要上传到的远端路径，可以是文件，也可以是目录（会上传到目录下）
         :return:
         """
-        if self.ssh_client.set_remote_host(remote_host) != 0:
+        if self.ssh_client.connect_remote_host(remote_host) != 0:
             self.log.error('user %s connect to remote host %s:%s failed' % (remote_host.username, remote_host.ip_addr,
                                                                             remote_host.port))
             return 1
@@ -54,7 +54,7 @@ class SCPProxy:
         :param local_file_path: 要下载到的本地路径，可以是文件，也可以是目录（会下载到目录下）
         :return:
         """
-        if self.ssh_client.set_remote_host(remote_host) != 0:
+        if self.ssh_client.connect_remote_host(remote_host) != 0:
             self.log.error('user %s connect to remote host %s:%s failed' % (remote_host.username, remote_host.ip_addr,
                                                                             remote_host.port))
             return 1

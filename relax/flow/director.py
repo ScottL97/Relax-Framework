@@ -23,7 +23,7 @@ class Director(metaclass=ABCMeta):
         return self._builder.constructed_object
 
     @abstractmethod
-    def construct(self, flow_json_path):
+    def construct(self):
         pass
 
     @abstractmethod
@@ -39,14 +39,12 @@ class FlowDirector(Director):
         self._flow_thread = None
         self._flow_watcher_thread = None
 
-    def construct(self, flow_json_path):
-        with open(flow_json_path, 'r', encoding='utf-8') as f:
-            flow_json = json.load(f)
-            try:
-                self._builder.build(flow_json)
-            except Exception as e:
-                self.log.error("Please check %s file, error: %s" % (flow_json_path, str(e)))
-                return 1
+    def construct(self):
+        try:
+            self._builder.build()
+        except Exception as e:
+            self.log.error("Please check %s file, error: %s" % (self._builder.flow_json_path, str(e)))
+            return 1
 
         return 0
 
@@ -77,8 +75,7 @@ class FlowDirector(Director):
             self.log.phase("START PHASE %s" % phase_name)
             phase = phases[phase_name]
             ret = phase.run()
-            phase.clean()
-            # 成功刷新进度条继续，失败返回非0值
+            # 成功刷新进度条继续，失败返回非0值结束自动化流程
             if ret == 0:
                 self.log.phase("%s SUCCESS" % phase_name)
                 self.window.set_phase(phase_name)
@@ -86,5 +83,6 @@ class FlowDirector(Director):
             else:
                 self.log.phase("%s FAIL" % phase_name)
                 break
+        self._builder.clean_construct_object()
         self.log.phase("END FLOW %s" % flow_name)
         return ret

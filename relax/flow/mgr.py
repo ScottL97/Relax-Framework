@@ -20,9 +20,9 @@ class FlowMgr:
         self.window = window
 
     def _construct_flow_builder(self, flow_json_path):
-        flow_builder = FlowBuilder(self.log)
+        flow_builder = FlowBuilder(self.log, flow_json_path)
         self.flow_director.set_builder(flow_builder)
-        if self.flow_director.construct(flow_json_path) != 0:
+        if self.flow_director.construct() != 0:
             return
         self.flow_builders[flow_builder.name] = flow_builder
 
@@ -42,5 +42,7 @@ class FlowMgr:
         self.window.init(self)
         self.window.disable_flow_buttons()
         self.flow_director.set_builder(self.flow_builders[flow_name])
+        if self.flow_director.construct() != 0:
+            return
         self.window.setup_phases(self.flow_director.get_constructed_object())
         self.flow_director.start(flow_name)
