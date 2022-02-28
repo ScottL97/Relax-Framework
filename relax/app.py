@@ -71,6 +71,7 @@ class Relax:
             return 1
         # 自动更新工具版本
         ret = upgrade_tool()
+        # TODO: 不要在这里处理返回值，更新时直接在upgrade_tool函数中退出
         if ret == 0:
             print('已经是最新版本')
         elif ret == 1:
@@ -80,7 +81,6 @@ class Relax:
             sys.exit(0)
 
         # 创建flow builder对象字典
-        # TODO: 如果要实现动态加载JSON流程文件，这个方法需要每次点击按钮时调用，或者增加按钮调用该方法
-        self.flow_mgr.init_flow_builders()
+        self.flow_mgr.init()
         # 启动GUI
         self.window.run()
