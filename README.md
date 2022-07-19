@@ -64,19 +64,20 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 from relax.flow.phase import Phase
+from relax.log_manager.log import Log
 import time
 
 
 class ImagesUpdater(Phase):
     def run(self):
-        self.log.info("ImagesUpdater start")
+        Log().info("ImagesUpdater start")
         time.sleep(1)
-        self.log.info("ImagesUpdater end")
+        Log().info("ImagesUpdater end")
 
         return 0
 
     def clean(self):
-        self.log.info("ImagesUpdater clean")
+        Log().info("ImagesUpdater clean")
         return 0
 ```
 

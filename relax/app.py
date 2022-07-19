@@ -8,7 +8,7 @@
 """
 import sys
 import os
-from relax.log.log import Log
+from relax.log_manager.log import Log
 from relax.singleton.singleton import singleton
 from relax.gui.tkinter_window import TkinterWindow
 from relax.flow.mgr import FlowMgr
@@ -62,13 +62,14 @@ def upgrade_tool():
 class Relax:
     def __init__(self, root_path):
         self.window = TkinterWindow()
-        self.log = Log(os.path.join(root_path, 'relax.log'), self.window)
-        self.flow_mgr = FlowMgr(root_path, self.log, self.window)
+        self._root_path = root_path
+        self.flow_mgr = FlowMgr(root_path, self.window)
 
     def init(self):
         # 初始化日志
-        if self.log.init() != 0:
+        if Log(os.path.join(self._root_path, 'relax.log'), level=1).init() != 0:
             return 1
+        Log().register_callback(self.window.append_log_to_textarea)
         # 自动更新工具版本
         ret = upgrade_tool()
         # TODO: 不要在这里处理返回值，更新时直接在upgrade_tool函数中退出

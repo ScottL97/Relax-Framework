@@ -32,8 +32,7 @@ class Builder(metaclass=ABCMeta):
 
 
 class FlowBuilder(Builder):
-    def __init__(self, log, flow_json_path):
-        self.log = log
+    def __init__(self, flow_json_path):
         self.flow_json_path = flow_json_path
         self.constructed_object = {}
         self.name = ""

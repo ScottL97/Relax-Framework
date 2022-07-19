@@ -7,13 +7,13 @@
 @Desc  : 通过SCP上传/下载文件
 """
 from scp import SCPClient
+from relax.log_manager.log import Log
 from relax.ssh_proxy.client_proxy import SSHClientProxy
 
 
 class SCPProxy:
-    def __init__(self, log):
-        self.log = log
-        self.ssh_client = SSHClientProxy(log)
+    def __init__(self):
+        self.ssh_client = SSHClientProxy()
 
     def upload_file(self, remote_host, source_file_path, target_file_path):
         """
@@ -24,14 +24,14 @@ class SCPProxy:
         :return:
         """
         if self.ssh_client.connect_remote_host(remote_host) != 0:
-            self.log.error('user %s connect to remote host %s:%s failed' % (remote_host.username, remote_host.ip_addr,
+            Log().error('user %s connect to remote host %s:%s failed' % (remote_host.username, remote_host.ip_addr,
                                                                             remote_host.port))
             return 1
         scp_client = SCPClient(self.ssh_client.get_transport())
         try:
             scp_client.put(source_file_path, target_file_path)
         except Exception as e:
-            self.log.error("upload file [%s] to SSH server [%s] failed, error: %s" % (source_file_path,
+            Log().error("upload file [%s] to SSH server [%s] failed, error: %s" % (source_file_path,
                                                                                       target_file_path, str(e)))
             return 1
         # TODO: 异常时是否需要close
@@ -55,14 +55,14 @@ class SCPProxy:
         :return:
         """
         if self.ssh_client.connect_remote_host(remote_host) != 0:
-            self.log.error('user %s connect to remote host %s:%s failed' % (remote_host.username, remote_host.ip_addr,
+            Log().error('user %s connect to remote host %s:%s failed' % (remote_host.username, remote_host.ip_addr,
                                                                             remote_host.port))
             return 1
         scp_client = SCPClient(self.ssh_client.get_transport())
         try:
             scp_client.get(remote_file_path, local_file_path)
         except Exception as e:
-            self.log.error("download file [%s] to local [%s] failed, error: %s" % (remote_file_path,
+            Log().error("download file [%s] to local [%s] failed, error: %s" % (remote_file_path,
                                                                                    local_file_path, str(e)))
             return 1
         # TODO: 异常时是否需要close

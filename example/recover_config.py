@@ -7,14 +7,15 @@
 @Desc  : 
 """
 from relax.flow.phase import Phase
+from relax.log_manager.log import Log
 import time
 
 
 class ConfigRecovery(Phase):
     def run(self):
-        self.log.info("ConfigRecovery start")
+        Log().info("ConfigRecovery start")
         time.sleep(1)
-        self.log.info("ConfigRecovery end")
+        Log().info("ConfigRecovery end")
 
         return 0
 

@@ -7,27 +7,27 @@
 @Desc  : 管理自动化流程，一个director通过设置不同的builder来切换自动化流程
 """
 import os
+from relax.log_manager.log import Log
 from relax.flow.director import FlowDirector
 from relax.flow.builder import FlowBuilder
 
 
 class FlowMgr:
-    def __init__(self, root_path, log, window):
+    def __init__(self, root_path, window):
         self.root_path = root_path
-        self.flow_director = FlowDirector(log)
+        self.flow_director = FlowDirector()
         self.flow_builders = {}
-        self.log = log
         self.window = window
 
     def _construct_flow_builder(self, flow_builder):
         self.flow_director.set_builder(flow_builder)
         if self.flow_director.construct() != 0:
-            self.log.error("construct %s failed" % flow_builder.flow_json_path)
+            Log().error("construct %s failed" % flow_builder.flow_json_path)
             return 1
         return 0
 
     def _add_flow_builder_to_builders(self, flow_json_path):
-        flow_builder = FlowBuilder(self.log, flow_json_path)
+        flow_builder = FlowBuilder(flow_json_path)
         if self._construct_flow_builder(flow_builder) != 0:
             return
         self.flow_builders[flow_builder.name] = flow_builder

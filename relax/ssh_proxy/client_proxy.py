@@ -7,13 +7,13 @@
 @Desc  : SSH客户端代理者
 """
 import paramiko
+from relax.log_manager.log import Log
 
 SSH_CONNECT_TIMEOUT = 10
 
 
 class SSHClientProxy:
-    def __init__(self, log):
-        self.log = log
+    def __init__(self):
         self.is_connected = False
         self.remote_host = None
         self.ssh_client = paramiko.SSHClient()
@@ -53,7 +53,7 @@ class SSHClientProxy:
             self.ssh_client.connect(self.remote_host.ip_addr, self.remote_host.port, username,
                                     password, timeout=SSH_CONNECT_TIMEOUT)
         except Exception as e:
-            self.log.error('ssh client connected to server failed: ' + str(e))
+            Log().error('ssh client connected to server failed: ' + str(e))
             return 1
 
         self.is_connected = True

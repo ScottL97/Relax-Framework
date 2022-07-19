@@ -8,14 +8,15 @@
 # TODO: 制作工具，根据JSON文件自动生成脚本和类
 """
 from relax.flow.phase import Phase
+from relax.log_manager.log import Log
 import time
 
 
 class ImagesAcquirer(Phase):
     def run(self):
-        self.log.info("ImagesAcquirer start")
+        Log().info("ImagesAcquirer start")
         time.sleep(1)
-        self.log.info("ImagesAcquirer end")
+        Log().info("ImagesAcquirer end")
 
         return 0
 

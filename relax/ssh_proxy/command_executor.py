@@ -13,6 +13,8 @@ import tempfile
 from relax.file_transfer.scp_proxy import SCPProxy
 from relax.ssh_proxy.client_proxy import SSHClientProxy
 
+from relax.log_manager.log import Log
+
 # TODO: 如果用户不属于sudoers、root用户禁止SSH登录、也没有expect，怎么办
 # 用户不属于sudoers时也无法正常执行root权限命令，所以生成脚本，scp拷贝到远程，通过expect脚本升root权限执行
 COMMON_SCRIPT = '''#!/bin/bash
@@ -43,9 +45,8 @@ class SSHCommandResult:
 
 
 class SSHCommandExecutor:
-    def __init__(self, log):
-        self.log = log
-        self.ssh_client = SSHClientProxy(log)
+    def __init__(self):
+        self.ssh_client = SSHClientProxy()
         self.tmp_dir = tempfile.TemporaryDirectory(dir='.').name
         self.root_cmd_executors = (self._exec_root_cmd_by_login_root, self._exec_root_cmd_by_sudo,
                                    self._exec_root_cmd_by_expect)
@@ -59,7 +60,7 @@ class SSHCommandExecutor:
         with open(source_filename, 'w') as f:
             f.write(script_string)
 
-        scp_proxy = SCPProxy(self.log)
+        scp_proxy = SCPProxy()
         if scp_proxy.upload_file(remote_host, source_filename, target_filename) != 0:
             return 1
 
@@ -67,7 +68,7 @@ class SSHCommandExecutor:
         stdin, stdout, stderr = self.ssh_client.exec_command("chmod 550 " + target_filename)
         err = stderr.read().decode('utf8').strip()
         if len(err) != 0:
-            self.log.error('change mod of %s failed: %s' % (target_filename, err))
+            Log().error('change mod of %s failed: %s' % (target_filename, err))
         self.ssh_client.exec_command("sed -i -e 's/\r//' " + target_filename)
 
     def _upload_login_root_script(self, remote_host):
@@ -77,21 +78,21 @@ class SSHCommandExecutor:
         self._upload_script(remote_host, su_script, 'su.sh')
 
     def _create_tmp_dir(self):
-        self.log.info('tmp_dir: %s [%s]' % (self.tmp_dir, os.path.basename(self.tmp_dir)))
+        Log().info('tmp_dir: %s [%s]' % (self.tmp_dir, os.path.basename(self.tmp_dir)))
         # 服务器上创建存放脚本的临时目录
         try:
             os.mkdir(self.tmp_dir)
         except Exception as e:
-            self.log.error('make local tmp dir %s failed: %s' % (os.path.basename(self.tmp_dir), str(e)))
+            Log().error('make local tmp dir %s failed: %s' % (os.path.basename(self.tmp_dir), str(e)))
             return 1
         try:
             stdin, stdout, stderr = self.ssh_client.exec_command("mkdir %s" % os.path.basename(self.tmp_dir))
         except Exception as e:
-            self.log.error('make remote tmp dir %s failed: %s' % (os.path.basename(self.tmp_dir), str(e)))
+            Log().error('make remote tmp dir %s failed: %s' % (os.path.basename(self.tmp_dir), str(e)))
             return 1
         err = stderr.read().decode('utf8')
         if len(err) != 0:
-            self.log.error('make remote tmp dir %s failed: %s' % (os.path.basename(self.tmp_dir), err))
+            Log().error('make remote tmp dir %s failed: %s' % (os.path.basename(self.tmp_dir), err))
             return 1
 
         return 0
@@ -125,7 +126,7 @@ class SSHCommandExecutor:
             int: 返回值，1 - 失败，0 - 成功
         """
         if self.ssh_client.connect_remote_host(remote_host, is_use_root=True) != 0:
-            self.log.error('user root connect to remote host %s:%s failed' % (remote_host.ip_addr, remote_host.port))
+            Log().error('user root connect to remote host %s:%s failed' % (remote_host.ip_addr, remote_host.port))
             return None, 1
         stdin, stdout, stderr = self.ssh_client.exec_command(cmd)
         return SSHCommandResult(stdin, stdout, stderr), 0
@@ -139,14 +140,14 @@ class SSHCommandExecutor:
             int: 返回值，1 - 失败，0 - 成功
         """
         if self.ssh_client.connect_remote_host(remote_host) != 0:
-            self.log.error('user %s connect to remote host %s:%s failed' % (remote_host.username, remote_host.ip_addr,
+            Log().error('user %s connect to remote host %s:%s failed' % (remote_host.username, remote_host.ip_addr,
                                                                             remote_host.port))
             return None, 1
         cmd = "sudo " + cmd
         try:
             stdin, stdout, stderr = self.ssh_client.exec_command(cmd)
         except Exception as e:
-            self.log.error("exec root cmd by sudo failed: %s" % str(e))
+            Log().error("exec root cmd by sudo failed: %s" % str(e))
             return None, 1
         if stderr.read().startswith(b'sudo: '):
             return None, 1
@@ -161,7 +162,7 @@ class SSHCommandExecutor:
             int: 返回值，1 - 失败，0 - 成功
         """
         if self.ssh_client.connect_remote_host(remote_host) != 0:
-            self.log.error('user %s connect to remote host %s:%s failed' % (remote_host.username, remote_host.ip_addr,
+            Log().error('user %s connect to remote host %s:%s failed' % (remote_host.username, remote_host.ip_addr,
                                                                             remote_host.port))
             return None, 1
         self._create_tmp_dir()
@@ -172,7 +173,7 @@ class SSHCommandExecutor:
 
         stdin, stdout, stderr = self.ssh_client.exec_command(root_cmd, get_pty=True)
         if stdout.read().find(b'/usr/bin/expect') != -1:
-            self.log.error("there is no expect on server")
+            Log().error("there is no expect on server")
             return None, 1
 
         return SSHCommandResult(stdin, stdout, stderr), 0
@@ -189,14 +190,14 @@ class SSHCommandExecutor:
             result, err = executor(remote_host, cmd)
             if err == 0:
                 return result, 0
-        self.log.error("exec root cmd failed")
+        Log().error("exec root cmd failed")
         return None, 1
 
     def _exec_non_root_cmd(self, remote_host, cmd):
         # TODO: 同一host，每次执行命令都要连接一次，效率较低
         # TODO: 当连接了一台新的host时，旧的host的信息就丢失了，也就不会释放旧的host上的临时目录
         if self.ssh_client.connect_remote_host(remote_host) != 0:
-            self.log.error('user %s connect to remote host %s:%s failed' % (remote_host.username, remote_host.ip_addr,
+            Log().error('user %s connect to remote host %s:%s failed' % (remote_host.username, remote_host.ip_addr,
                                                                             remote_host.port))
             return None, 1
         stdin, stdout, stderr = self.ssh_client.exec_command(cmd)
@@ -207,7 +208,7 @@ class SSHCommandExecutor:
         stdin, stdout, stderr = self.ssh_client.exec_command("rm -rf %s" % os.path.basename(self.tmp_dir))
         err = stderr.read().decode('utf8')
         if len(err) != 0:
-            self.log.error('rm -rf %s tmp dir on SSH server failed: %s' % (self.tmp_dir, err))
+            Log().error('rm -rf %s tmp dir on SSH server failed: %s' % (self.tmp_dir, err))
         if os.path.isdir(self.tmp_dir):
             shutil.rmtree(self.tmp_dir)
         self.ssh_client.close()

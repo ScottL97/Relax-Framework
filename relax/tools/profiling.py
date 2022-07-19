@@ -8,6 +8,7 @@
 """
 import time
 from functools import wraps
+from relax.log_manager.log import Log
 
 
 def profiling(f):
@@ -20,7 +21,7 @@ def profiling(f):
         seconds = end_time - start_time
         minutes = seconds / 60
         seconds = seconds % 60
-        self.log.phase("运行时间: %d 分 %d 秒" % (minutes, seconds))
+        Log().phase("运行时间: %d 分 %d 秒" % (minutes, seconds))
 
         return result
 

@@ -7,14 +7,15 @@
 @Desc  : 
 """
 from relax.flow.phase import Phase
+from relax.log_manager.log import Log
 import time
 
 
 class ImagesUploader(Phase):
     def run(self):
-        self.log.info("ImagesUploader start")
+        Log().info("ImagesUploader start")
         time.sleep(1)
-        self.log.info("ImagesUploader end")
+        Log().info("ImagesUploader end")
 
         return 0
 

@@ -10,6 +10,7 @@ import gc
 from abc import ABCMeta, abstractmethod
 from relax.flow.thread import FlowThread, FlowWatcherThread
 from relax.tools.profiling import profiling
+from relax.log_manager.log import Log
 
 
 class Director(metaclass=ABCMeta):
@@ -32,9 +33,8 @@ class Director(metaclass=ABCMeta):
 
 
 class FlowDirector(Director):
-    def __init__(self, log):
+    def __init__(self):
         super().__init__()
-        self.log = log
         self._flow_thread = None
         self._flow_watcher_thread = None
 
@@ -47,7 +47,7 @@ class FlowDirector(Director):
         try:
             self._builder.build()
         except Exception as e:
-            self.log.error("Please check %s file, error: %s" % (self._builder.flow_json_path, str(e)))
+            Log().error("Please check %s file, error: %s" % (self._builder.flow_json_path, str(e)))
             return 1
 
         return 0
@@ -85,21 +85,21 @@ class FlowDirector(Director):
         flow_name = self.get_flow_name()
         phases = self.get_constructed_object()
 
-        self.log.phase("START FLOW %s" % flow_name)
+        Log().phase("START FLOW %s" % flow_name)
         for phase_name in phases:
-            self.log.phase("START PHASE %s" % phase_name)
+            Log().phase("START PHASE %s" % phase_name)
             phase_class = phases[phase_name][0]
             phase_progress = phases[phase_name][1]
-            phase = phase_class(self.log, phase_name, phase_progress)
+            phase = phase_class(phase_name, phase_progress)
             ret = phase.run()
             # 成功刷新进度条继续，失败返回非0值结束自动化流程
             if ret == 0:
-                self.log.phase("%s SUCCESS" % phase_name)
+                Log().phase("%s SUCCESS" % phase_name)
                 for update_callback in self._update_callbacks:
                     update_callback(phase)
             else:
-                self.log.phase("%s FAIL" % phase_name)
+                Log().phase("%s FAIL" % phase_name)
                 break
         gc.collect()
-        self.log.phase("END FLOW %s" % flow_name)
+        Log().phase("END FLOW %s" % flow_name)
         return ret

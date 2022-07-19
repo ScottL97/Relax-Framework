@@ -10,8 +10,7 @@ from abc import ABCMeta, abstractmethod
 
 
 class Phase(metaclass=ABCMeta):
-    def __init__(self, log, phase_name, progress):
-        self.log = log
+    def __init__(self, phase_name, progress):
         self.phase_name = phase_name
         self.progress = progress
 

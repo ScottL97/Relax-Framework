@@ -7,14 +7,15 @@
 @Desc  : 
 """
 from relax.flow.phase import Phase
+from relax.log_manager.log import Log
 import time
 
 
 class ConfigExporter(Phase):
     def run(self):
-        self.log.info("ConfigExporter start")
+        Log().info("ConfigExporter start")
         time.sleep(1)
-        self.log.info("ConfigExporter end")
+        Log().info("ConfigExporter end")
 
         return 0
 
