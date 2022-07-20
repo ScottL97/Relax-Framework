@@ -37,14 +37,22 @@ from relax.flow.phase import Phase
 
 PHASE_CLASS = '''
 class %s(Phase):
-    def __init__(self, log, progress):
-        super().__init__(log, progress)
+    def __init__(self, phase_name, progress):
+        super().__init__(phase_name, progress)
 
     def run(self):
         return 0
 
     def clean(self):
         return 0
+'''
+
+RELAX_INI = '''
+[CONF]
+server.ip = 127.0.0.1
+server.port = 8200
+gui.mode = tkinter
+log.level = INFO
 '''
 
 
@@ -98,13 +106,20 @@ def create_class(handlers):
             f.write(PHASE_CLASS % class_name)
 
 
-def generate_main_py():
-    main_file_path = os.path.join(root_path, "main.py")
-    if os.path.isfile(main_file_path):
+def _generate_file(file_path, file_content):
+    if os.path.isfile(file_path):
         return
 
-    with open(main_file_path, 'w', encoding='utf-8') as f:
-        f.write(MAIN_PY)
+    with open(file_path, 'w', encoding='utf-8') as f:
+        f.write(file_content)
+
+
+def generate_main_py():
+    _generate_file(os.path.join(root_path, "main.py"), MAIN_PY)
+
+
+def generate_relax_ini():
+    _generate_file(os.path.join(root_path, "relax.ini"), RELAX_INI)
 
 
 if __name__ == '__main__':
@@ -129,6 +144,12 @@ if __name__ == '__main__':
         generate_main_py()
     except Exception as e:
         print("generate main.py failed:", str(e))
+        sys.exit(1)
+
+    try:
+        generate_relax_ini()
+    except Exception as e:
+        print("generate relax.ini failed:", str(e))
         sys.exit(1)
 
     print("flow json to module success")

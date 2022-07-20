@@ -6,7 +6,7 @@
 @Date  : 2022/2/4 19:49
 @Desc  : 
 """
-from relax.gui.window import Window
+from relax.gui.gui import GUI
 import random
 import tkinter as tk
 from tkinter import scrolledtext
@@ -20,7 +20,7 @@ LOG_COLOR_DICT = {'ERROR': 'red',
                   'PHASE': 'purple'}
 
 
-class TkinterWindow(Window):
+class TkinterWindow(GUI):
     def __init__(self):
         self.window = tk.Tk()
         self.window.resizable(width=False, height=False)
@@ -88,6 +88,7 @@ class TkinterWindow(Window):
 
     # 设置GUI上显示的阶段
     def setup_phases(self, phases):
+        self.disable_flow_buttons()
         self._destroy_phase_check_buttons()
         for phase_name in phases:
             self.phase_check_buttons[phase_name] = PhaseCheckButton(phase_name, self.phases_frame)
@@ -125,8 +126,11 @@ class TkinterWindow(Window):
     def set_phase(self, phase_name):
         self.phase_check_buttons[phase_name].active()
 
+    def write_log(self, level, line):
+        self._append_log_to_textarea(level, line)
+
     # 在文本框中追加日志
-    def append_log_to_textarea(self, level, line):
+    def _append_log_to_textarea(self, level, line):
         self.textarea.config(state=tk.NORMAL)
         tag_name = ''.join(random.sample('abcdefghijklmnopqrstuvwxyz', 5))
         self.textarea.insert(tk.END, line, tag_name)

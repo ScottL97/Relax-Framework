@@ -13,11 +13,11 @@ from relax.flow.builder import FlowBuilder
 
 
 class FlowMgr:
-    def __init__(self, root_path, window):
-        self.root_path = root_path
+    def __init__(self, root_path, gui):
+        self._root_path = root_path
         self.flow_director = FlowDirector()
         self.flow_builders = {}
-        self.window = window
+        self._gui = gui
 
     def _construct_flow_builder(self, flow_builder):
         self.flow_director.set_builder(flow_builder)
@@ -43,30 +43,29 @@ class FlowMgr:
         TODO: 如果要实现动态加载JSON流程文件，这个方法需要每次点击按钮时调用，或者增加按钮调用该方法
         """
         self.flow_builders = {}
-        for root, dirs, files in os.walk(self.root_path):
+        for root, dirs, files in os.walk(self._root_path):
             json_files = [file for file in files if file.endswith(".json")]
             for json_file in json_files:
                 self._add_flow_builder_to_builders(os.path.join(root, json_file))
-        self.window.init(self)
+        self._gui.init(self)
 
     def _register_observers(self):
         self.flow_director.register_start_callback(
-            lambda flow_name: self.window.set_result('运行结果：[%s] 运行中' % flow_name)
+            lambda flow_name: self._gui.set_result('运行结果：[%s] 运行中' % flow_name)
         )
 
         def _update_window(phase):
-            self.window.set_phase(phase.phase_name)
-            self.window.set_progress(phase.progress)
+            self._gui.set_phase(phase.phase_name)
+            self._gui.set_progress(phase.progress)
         self.flow_director.register_update_callback(_update_window)
 
         self.flow_director.register_complete_callback(
-            lambda result, flow_name: self.window.setup_result(result, flow_name)
+            lambda result, flow_name: self._gui.setup_result(result, flow_name)
         )
 
     def start_flow(self, flow_name):
-        self.window.set_progress(0)
+        self._gui.set_progress(0)
         if self._construct_flow_builder(self.flow_builders[flow_name]) != 0:
             return
-        self.window.disable_flow_buttons()
-        self.window.setup_phases(self.flow_director.get_constructed_object())
+        self._gui.setup_phases(self.flow_director.get_constructed_object())
         self.flow_director.start(flow_name)

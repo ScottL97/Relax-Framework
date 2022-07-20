@@ -1,19 +1,23 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-@File  : __init__.py.py
+@File  : app.py
 @Author: Scott
 @Date  : 2022/2/2 15:49
 @Desc  : Relax框架单例类
 """
 import sys
-import os
 from relax.log_manager.log import Log
 from relax.singleton.singleton import singleton
 from relax.gui.tkinter_window import TkinterWindow
 from relax.flow.mgr import FlowMgr
+from relax.config.config import Config
 
 local_version = '0.1.0'
+# TODO: 补充单元测试
+# TODO: 增加WebsocketProxy，支持通过websocket发送自动化进度，注册到FlowDirector的观察者里
+# TODO: 支持调用K8S的API实现K8S操作自动化
+# TODO: 解耦FlowMgr和GUI
 
 
 # TODO: 检查工具是否有新版本
@@ -61,15 +65,30 @@ def upgrade_tool():
 @singleton
 class Relax:
     def __init__(self, root_path):
-        self.window = TkinterWindow()
         self._root_path = root_path
-        self.flow_mgr = FlowMgr(root_path, self.window)
+        self._gui = None
+
+    def _init_gui(self):
+        gui_mode = Config().get_gui_mode()
+        if gui_mode is None:
+            Log().error("no GUI mode")
+            return 1
+
+        if gui_mode == "tkinter":
+            # 初始化GUI
+            self._gui = TkinterWindow()
+            # 通过流程管理者初始化自动化流程及GUI
+            FlowMgr(self._root_path, self._gui).init()
+        else:
+            Log().error("wrong GUI mode")
+            return 1
+
+        Log().register_callback(self._gui.write_log)
+        return 0
 
     def init(self):
-        # 初始化日志
-        if Log(os.path.join(self._root_path, 'relax.log'), level=1).init() != 0:
-            return 1
-        Log().register_callback(self.window.append_log_to_textarea)
+        # 初始化配置
+        Config(self._root_path).load()
         # 自动更新工具版本
         ret = upgrade_tool()
         # TODO: 不要在这里处理返回值，更新时直接在upgrade_tool函数中退出
@@ -80,8 +99,11 @@ class Relax:
         else:
             print('更新中，完成后自动启动')
             sys.exit(0)
-
-        # 创建flow builder对象字典
-        self.flow_mgr.init()
+        # 初始化日志
+        if Log(self._root_path).init() != 0:
+            return 1
+        # 根据配置初始化GUI
+        if self._init_gui() != 0:
+            return 1
         # 启动GUI
-        self.window.run()
+        self._gui.run()

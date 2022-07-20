@@ -9,6 +9,8 @@
 import os
 import time
 from relax.singleton.singleton import singleton
+from relax.config.config import Config
+from relax.constant.constant import LOG_LEVEL, LOG_FILE_NAME
 
 
 @singleton
@@ -16,18 +18,11 @@ class Log:
     """
     单例模式的日志
     """
-    _LEVEL_NUMBER = {
-        "DEBUG": 0,
-        "INFO": 1,
-        "WARN": 2,
-        "ERROR": 3,
-        "PHASE": 4
-    }
 
-    def __init__(self, log_path=None, level=_LEVEL_NUMBER["INFO"]):
-        self._log_path = log_path
+    def __init__(self, root_path=""):
+        self._log_path = os.path.join(root_path, LOG_FILE_NAME)
         self._pid = os.getpid()
-        self._level = level
+        self._level = Config().get_log_level()
 
         # 观察者集合，写日志时调用该集合中的所有callback函数
         self._callbacks = set()
@@ -42,10 +37,10 @@ class Log:
 
     def init(self):
         if not os.path.isdir(os.path.dirname(self._log_path)):
-            print("wrong log_manager dir:", os.path.dirname(self._log_path))
+            print("wrong log dir:", os.path.dirname(self._log_path))
             return 1
 
-        self.info("finish init log_manager")
+        self.info("finish init log")
 
         return 0
 
@@ -53,7 +48,7 @@ class Log:
         self._level = level
 
     def _write_log(self, level, *msg):
-        if self._level > self._LEVEL_NUMBER[level]:
+        if self._level > LOG_LEVEL[level]:
             return
         log_string = " ".join(msg)
         line = "[%d] %s [%s] %s\n" % (self._pid, time.asctime(), level, log_string)

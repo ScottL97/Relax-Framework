@@ -9,7 +9,7 @@
 from abc import ABCMeta, abstractmethod
 
 
-class Window(metaclass=ABCMeta):
+class GUI(metaclass=ABCMeta):
     @abstractmethod
     def init(self, flow_mgr):
         """
@@ -25,23 +25,9 @@ class Window(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def enable_flow_buttons(self):
-        """
-        使所有flow按钮可用
-        """
-        pass
-
-    @abstractmethod
-    def disable_flow_buttons(self):
-        """
-        使所有flow按钮不可用
-        """
-        pass
-
-    @abstractmethod
     def setup_phases(self, phases):
         """
-        显示各阶段check button
+        显示流程的各阶段
         """
         pass
 
@@ -60,15 +46,15 @@ class Window(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def append_log_to_textarea(self, level, line):
+    def set_result(self, result):
         """
-        在textarea文本框中追加日志
+        设置自动化流程运行结果
         """
         pass
 
     @abstractmethod
-    def setup_result(self, result, flow_name):
+    def write_log(self, level, line):
         """
-        显示自动化流程（flow）运行结果
+        在GUI上写日志
         """
         pass
